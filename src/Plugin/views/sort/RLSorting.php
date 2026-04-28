@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ai_sorting\Plugin\views\sort;
+namespace Drupal\rl_sorting\Plugin\views\sort;
 
 use Drupal\views\Plugin\views\sort\SortPluginBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -13,9 +13,9 @@ use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 /**
  * AI-based sorting plugin for Views using Reinforcement Learning.
  *
- * @ViewsSort("ai_sorting")
+ * @ViewsSort("rl_sorting")
  */
-class AISorting extends SortPluginBase {
+class RLSorting extends SortPluginBase {
 
   /**
    * The RL experiment manager.
@@ -46,7 +46,7 @@ class AISorting extends SortPluginBase {
   protected CacheManager $cacheManager;
 
   /**
-   * Constructs a new AISorting object.
+   * Constructs a new RLSorting object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
@@ -108,7 +108,7 @@ class AISorting extends SortPluginBase {
       $this->ensureMyTable();
 
       // Generate deterministic experiment ID from view and display.
-      $experiment_id = 'ai_sorting-' . $this->view->id() . '-' . $this->view->current_display;
+      $experiment_id = 'rl_sorting-' . $this->view->id() . '-' . $this->view->current_display;
       // Sanitize to ensure database-safe characters.
       $experiment_id = preg_replace('/[^a-zA-Z0-9_-]/', '_', $experiment_id);
 
@@ -119,7 +119,7 @@ class AISorting extends SortPluginBase {
 
       // If no base field is defined, we can't sort.
       if (empty($base_field)) {
-        throw new \RuntimeException('AI Sorting requires a base_field to be defined in the view.');
+        throw new \RuntimeException('RL Sorting requires a base_field to be defined in the view.');
       }
 
       // Get all possible arm IDs that will be in the result set.
@@ -176,7 +176,7 @@ class AISorting extends SortPluginBase {
       // Fail hard if RL module doesn't return scores - no silent fallbacks!
       if (empty($scores)) {
         throw new \RuntimeException(sprintf(
-          'AI Sorting FAILED: No scores returned for experiment "%s". RL module must always return scores for requested arms. Check RL module configuration and database connectivity.',
+          'RL Sorting FAILED: No scores returned for experiment "%s". RL module must always return scores for requested arms. Check RL module configuration and database connectivity.',
           $experiment_id
         ));
       }
@@ -202,19 +202,19 @@ class AISorting extends SortPluginBase {
         NULL,
         $case_statement,
         'DESC',
-        'ai_sorting_score'
+        'rl_sorting_score'
       );
 
-      // Override page cache if AI Sorting cache is shorter than site cache.
+      // Override page cache if RL Sorting cache is shorter than site cache.
       $view_config = $this->view->storage->get('display');
-      $ai_sorting_cache = (int) ($view_config['default']['display_options']['sorts']['ai_sorting']['cache_max_age'] ?? 1);
+      $rl_sorting_cache = (int) ($view_config['default']['display_options']['sorts']['rl_sorting']['cache_max_age'] ?? 1);
 
-      $this->cacheManager->overridePageCacheIfShorter($ai_sorting_cache);
+      $this->cacheManager->overridePageCacheIfShorter($rl_sorting_cache);
 
     }
     catch (\Exception $e) {
-      $logger = $this->loggerFactory->get('ai_sorting');
-      $logger->error('AI Sorting: @message', ['@message' => $e->getMessage()]);
+      $logger = $this->loggerFactory->get('rl_sorting');
+      $logger->error('RL Sorting: @message', ['@message' => $e->getMessage()]);
       throw $e;
     }
   }
@@ -227,26 +227,26 @@ class AISorting extends SortPluginBase {
 
     unset($form['order']);
 
-    $form['ai_sorting_settings'] = [
+    $form['rl_sorting_settings'] = [
       '#type' => 'details',
-      '#title' => $this->t('AI Sorting Settings'),
+      '#title' => $this->t('RL Sorting Settings'),
       '#open' => TRUE,
-      '#description' => $this->t('<strong>What does AI Sorting do?</strong><br>
-        AI Sorting automatically orders content based on user engagement. It learns which content gets clicked more often and shows the most engaging content first, while still giving new content a chance to be discovered.<br><br>
+      '#description' => $this->t('<strong>What does RL Sorting do?</strong><br>
+        RL Sorting automatically orders content based on user engagement. It learns which content gets clicked more often and shows the most engaging content first, while still giving new content a chance to be discovered.<br><br>
         <strong>How it works:</strong><br>
         • <em>Impressions</em>: When content appears in this view<br>
         • <em>Conversions</em>: When users click on that content<br>
         • The system balances showing popular content with exploring new options.'),
     ];
 
-    $form['ai_sorting_settings']['favor_recent'] = [
+    $form['rl_sorting_settings']['favor_recent'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Favor recent content'),
       '#default_value' => $this->options['favor_recent'] ?? FALSE,
       '#description' => $this->t('Enable this for content that becomes outdated (news, campaigns, seasonal products).'),
     ];
 
-    $form['ai_sorting_settings']['time_window_seconds'] = [
+    $form['rl_sorting_settings']['time_window_seconds'] = [
       '#type' => 'select',
       '#title' => $this->t('Count interactions from'),
       '#default_value' => $this->options['time_window_seconds'] ?? 7776000,
@@ -262,19 +262,19 @@ class AISorting extends SortPluginBase {
       ],
       '#states' => [
         'visible' => [
-          ':input[name="options[ai_sorting_settings][favor_recent]"]' => ['checked' => TRUE],
+          ':input[name="options[rl_sorting_settings][favor_recent]"]' => ['checked' => TRUE],
         ],
       ],
       '#description' => $this->t('Only recently active content influences recommendations.'),
     ];
 
-    $form['ai_sorting_settings']['advanced'] = [
+    $form['rl_sorting_settings']['advanced'] = [
       '#type' => 'details',
       '#title' => $this->t('Advanced Settings'),
       '#open' => FALSE,
     ];
 
-    $form['ai_sorting_settings']['advanced']['cache_max_age'] = [
+    $form['rl_sorting_settings']['advanced']['cache_max_age'] = [
       '#type' => 'select',
       '#title' => $this->t('Cache duration'),
       '#default_value' => $this->options['cache_max_age'] ?? 1,
@@ -299,16 +299,16 @@ class AISorting extends SortPluginBase {
 
     $options = &$form_state->getValue('options');
 
-    if (isset($options['ai_sorting_settings']['favor_recent'])) {
-      $this->options['favor_recent'] = $options['ai_sorting_settings']['favor_recent'];
+    if (isset($options['rl_sorting_settings']['favor_recent'])) {
+      $this->options['favor_recent'] = $options['rl_sorting_settings']['favor_recent'];
     }
 
-    if (isset($options['ai_sorting_settings']['time_window_seconds'])) {
-      $this->options['time_window_seconds'] = $options['ai_sorting_settings']['time_window_seconds'];
+    if (isset($options['rl_sorting_settings']['time_window_seconds'])) {
+      $this->options['time_window_seconds'] = $options['rl_sorting_settings']['time_window_seconds'];
     }
 
-    if (isset($options['ai_sorting_settings']['advanced']['cache_max_age'])) {
-      $this->options['cache_max_age'] = $options['ai_sorting_settings']['advanced']['cache_max_age'];
+    if (isset($options['rl_sorting_settings']['advanced']['cache_max_age'])) {
+      $this->options['cache_max_age'] = $options['rl_sorting_settings']['advanced']['cache_max_age'];
     }
 
     $cache_max_age = $this->options['cache_max_age'] ?? 60;

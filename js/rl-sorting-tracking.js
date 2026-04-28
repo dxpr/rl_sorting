@@ -1,24 +1,24 @@
 (function (Drupal, once) {
   'use strict';
 
-  Drupal.behaviors.aiSortingTracking = {
+  Drupal.behaviors.rlSortingTracking = {
     attach: function (context, settings) {
-      if (!settings.aiSorting || !settings.aiSorting.views) {
+      if (!settings.rlSorting || !settings.rlSorting.views) {
         return;
       }
 
-      once('ai-sorting-tracking', '.view', context).forEach(function(view) {
+      once('rl-sorting-tracking', '.view', context).forEach(function(view) {
         var viewIdClass = Array.from(view.classList).find(cls => cls.startsWith('view-id-'));
         var displayIdClass = Array.from(view.classList).find(cls => cls.startsWith('view-display-id-'));
         var viewId = viewIdClass ? viewIdClass.replace('view-id-', '') : 'unknown';
         var displayId = displayIdClass ? displayIdClass.replace('view-display-id-', '') : 'unknown';
         var viewDisplayKey = viewId + '.' + displayId;
 
-        if (!settings.aiSorting.views[viewDisplayKey]) {
+        if (!settings.rlSorting.views[viewDisplayKey]) {
           return;
         }
 
-        var viewSettings = settings.aiSorting.views[viewDisplayKey];
+        var viewSettings = settings.rlSorting.views[viewDisplayKey];
         var experimentId = viewSettings.experimentId;
         var entityIds = viewSettings.entityIds;
         var entityUrlMap = viewSettings.entityUrlMap;
@@ -26,7 +26,7 @@
 
         // Fail hard if required data is missing
         if (!experimentId || !rlEndpointUrl) {
-          throw new Error('AI Sorting: Missing required experiment data (experimentId or rlEndpointUrl)');
+          throw new Error('RL Sorting: Missing required experiment data (experimentId or rlEndpointUrl)');
         }
 
         // Track rewards (when links are clicked) and turns (when links become visible)
@@ -77,7 +77,7 @@
               turnObserver.observe(link);
 
               // Session storage key for tracking rewarded experiments in this page load.
-              var storageKey = 'ai_sorting_rewarded_' + experimentId;
+              var storageKey = 'rl_sorting_rewarded_' + experimentId;
 
               // Track reward when clicked
               link.addEventListener('click', function() {

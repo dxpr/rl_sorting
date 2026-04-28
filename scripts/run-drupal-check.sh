@@ -23,7 +23,7 @@ composer config --no-plugins allow-plugins.tbachert/spi true --no-interaction
 cat <<EOF > phpstan.neon
 parameters:
     paths:
-        - web/modules/contrib/ai_sorting
+        - web/modules/contrib/rl_sorting
     # Set the analysis level (0-9)
     level: 5
     # Treat PHPDoc types as less certain to avoid false positives with Drupal API methods
@@ -32,8 +32,8 @@ EOF
 
 mkdir -p web/modules/contrib/
 
-if [ ! -L "web/modules/contrib/ai_sorting" ]; then
-  ln -s /src web/modules/contrib/ai_sorting
+if [ ! -L "web/modules/contrib/rl_sorting" ]; then
+  ln -s /src web/modules/contrib/rl_sorting
 fi
 
 # Install required module dependencies for PHPStan analysis

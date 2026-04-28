@@ -1,7 +1,7 @@
-# AI Sorting - Self-Learning A/B Testing for Content
+# RL Sorting - Self-Learning A/B Testing for Content
 
 Advanced A/B testing for Drupal Views that learns automatically. Instead of
-manually setting up A/B tests, AI Sorting continuously tests all content
+manually setting up A/B tests, RL Sorting continuously tests all content
 simultaneously using Thompson Sampling machine learning to surface winners
 while giving new content fair exposure.
 
@@ -25,7 +25,7 @@ while giving new content fair exposure.
 
 1. Install the module (requires [RL module](https://www.drupal.org/project/rl))
 2. Edit any View display (nodes, users, terms, media, custom entities)
-3. Add "AI Sorting" as a sort criteria
+3. Add "RL Sorting" as a sort criteria
 4. Configure cache refresh rate and time window options
 5. Save - items immediately begin learning from user interactions
 
@@ -39,7 +39,7 @@ while giving new content fair exposure.
 
 ## Beyond Traditional A/B Testing
 
-Unlike traditional A/B testing tools, AI Sorting provides:
+Unlike traditional A/B testing tools, RL Sorting provides:
 
 - **Multi-Variant Testing** - Test unlimited content pieces simultaneously,
   not just A vs B

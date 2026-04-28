@@ -1,0 +1,10 @@
+services:
+  rl_sorting.experiment_registration:
+    class: Drupal\rl_sorting\Service\ExperimentRegistrationService
+    arguments: ['@rl.experiment_registry']
+
+  rl_sorting.experiment_decorator:
+    class: Drupal\rl_sorting\Decorator\RlSortingExperimentDecorator
+    arguments: ['@entity_type.manager']
+    tags:
+      - { name: rl_experiment_decorator }

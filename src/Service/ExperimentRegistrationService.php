@@ -1,11 +1,11 @@
 <?php
 
-namespace Drupal\ai_sorting\Service;
+namespace Drupal\rl_sorting\Service;
 
 use Drupal\rl\Registry\ExperimentRegistryInterface;
 
 /**
- * Service for registering AI Sorting experiments.
+ * Service for registering RL Sorting experiments.
  */
 class ExperimentRegistrationService {
 
@@ -35,7 +35,7 @@ class ExperimentRegistrationService {
    *   Optional human-readable experiment name.
    */
   public function registerExperiment(string $experiment_id, ?string $experiment_name = NULL): void {
-    $this->experimentRegistry->register($experiment_id, 'ai_sorting', $experiment_name);
+    $this->experimentRegistry->register($experiment_id, 'rl_sorting', $experiment_name);
   }
 
 }

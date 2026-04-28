@@ -1,7 +1,7 @@
-ai_sorting_tracking:
+rl_sorting_tracking:
   version: VERSION
   js:
-    js/ai-sorting-tracking.js: {}
+    js/rl-sorting-tracking.js: {}
   dependencies:
     - core/drupal
     - core/drupalSettings

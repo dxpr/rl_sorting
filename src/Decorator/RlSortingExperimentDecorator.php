@@ -1,17 +1,17 @@
 <?php
 
-namespace Drupal\ai_sorting\Decorator;
+namespace Drupal\rl_sorting\Decorator;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\rl\Decorator\ExperimentDecoratorInterface;
 use Drupal\views\Views;
 
 /**
- * Experiment decorator for ai_sorting experiments.
+ * Experiment decorator for rl_sorting experiments.
  *
  * Provides human-readable entity labels for arm IDs in RL reports.
  */
-class AiSortingExperimentDecorator implements ExperimentDecoratorInterface {
+class RlSortingExperimentDecorator implements ExperimentDecoratorInterface {
 
   /**
    * The entity type manager.
@@ -28,7 +28,7 @@ class AiSortingExperimentDecorator implements ExperimentDecoratorInterface {
   protected array $viewEntityTypeCache = [];
 
   /**
-   * Constructs an AiSortingExperimentDecorator.
+   * Constructs an RlSortingExperimentDecorator.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
@@ -49,20 +49,20 @@ class AiSortingExperimentDecorator implements ExperimentDecoratorInterface {
    * {@inheritdoc}
    */
   public function decorateArm(string $experiment_id, string $arm_id): ?array {
-    // Only handle ai_sorting experiments.
-    if (!str_starts_with($experiment_id, 'ai_sorting-')) {
+    // Only handle rl_sorting experiments.
+    if (!str_starts_with($experiment_id, 'rl_sorting-')) {
       return NULL;
     }
 
-    // Extract view_id from "ai_sorting-{view_id}-{display_id}".
+    // Extract view_id from "rl_sorting-{view_id}-{display_id}".
     $parts = explode('-', $experiment_id);
     if (count($parts) < 3) {
       return NULL;
     }
 
     // The view_id might contain hyphens, so we need to handle that.
-    // Format: ai_sorting-{view_id}-{display_id}
-    // Remove 'ai_sorting' prefix and last part (display_id).
+    // Format: rl_sorting-{view_id}-{display_id}
+    // Remove 'rl_sorting' prefix and last part (display_id).
     array_shift($parts);
     array_pop($parts);
     $view_id = implode('-', $parts);

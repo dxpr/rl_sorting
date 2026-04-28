@@ -1,4 +1,4 @@
-name: 'AI Sorting'
+name: 'RL Sorting'
 type: module
 description: 'Provides an AI-based sorting plugin using reinforcement learning for Drupal Views.'
 core_version_requirement: ^10.3 | ^11

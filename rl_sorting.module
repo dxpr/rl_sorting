@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Primary module file for AI Sorting.
+ * Primary module file for RL Sorting.
  */
 
 use Drupal\Core\Url;
@@ -13,13 +13,13 @@ use Drupal\views\ViewExecutable;
 /**
  * Implements hook_help().
  */
-function ai_sorting_help($route_name, RouteMatchInterface $route_match) {
+function rl_sorting_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
-    case 'help.page.ai_sorting':
+    case 'help.page.rl_sorting':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t(
-        'The AI Sorting module provides an intelligent sorting mechanism
+        'The RL Sorting module provides an intelligent sorting mechanism
           for Drupal Views using reinforcement learning algorithms.'
       ) . '</p>';
       return $output;
@@ -29,10 +29,10 @@ function ai_sorting_help($route_name, RouteMatchInterface $route_match) {
 /**
  * Implements hook_views_pre_render().
  */
-function ai_sorting_views_pre_render(ViewExecutable $view) {
-  // Check if the view uses the 'ai_sorting' sort plugin.
+function rl_sorting_views_pre_render(ViewExecutable $view) {
+  // Check if the view uses the 'rl_sorting' sort plugin.
   $sorts = $view->display_handler->getOption('sorts');
-  if (!isset($sorts['ai_sorting'])) {
+  if (!isset($sorts['rl_sorting'])) {
     return;
   }
 
@@ -92,7 +92,7 @@ function ai_sorting_views_pre_render(ViewExecutable $view) {
 
   if (!empty($entity_ids)) {
     // Generate deterministic experiment ID from view and display.
-    $experiment_id = 'ai_sorting-' . $view->id() . '-' . $view->current_display;
+    $experiment_id = 'rl_sorting-' . $view->id() . '-' . $view->current_display;
     // Sanitize to ensure database-safe characters.
     $experiment_id = preg_replace('/[^a-zA-Z0-9_-]/', '_', $experiment_id);
 
@@ -101,7 +101,7 @@ function ai_sorting_views_pre_render(ViewExecutable $view) {
 
     // Register this experiment with the RL module.
     $registration_service = \Drupal::service(
-      'ai_sorting.experiment_registration'
+      'rl_sorting.experiment_registration'
     );
     $registration_service->registerExperiment($experiment_id, $experiment_name);
 
@@ -110,8 +110,8 @@ function ai_sorting_views_pre_render(ViewExecutable $view) {
     $base_path = \Drupal::request()->getBasePath();
 
     // Attach JavaScript library and settings.
-    $view->element['#attached']['library'][] = 'ai_sorting/ai_sorting_tracking';
-    $view->element['#attached']['drupalSettings']['aiSorting']['views'][$view->id() . '.' . $view->current_display] = [
+    $view->element['#attached']['library'][] = 'rl_sorting/rl_sorting_tracking';
+    $view->element['#attached']['drupalSettings']['rlSorting']['views'][$view->id() . '.' . $view->current_display] = [
       'experimentId' => $experiment_id,
       'entityIds' => $entity_ids,
       'entityUrlMap' => $entity_url_map,
@@ -127,7 +127,7 @@ function ai_sorting_views_pre_render(ViewExecutable $view) {
 /**
  * Implements hook_contextual_links_view_alter().
  */
-function ai_sorting_contextual_links_view_alter(&$element, $items) {
+function rl_sorting_contextual_links_view_alter(&$element, $items) {
   // Only proceed if this is a view contextual link group.
   if (!isset($items['entity.view.edit_form']['metadata']['name']) ||
       !isset($items['entity.view.edit_form']['metadata']['display_id'])) {
@@ -137,24 +137,24 @@ function ai_sorting_contextual_links_view_alter(&$element, $items) {
   $view_id = $items['entity.view.edit_form']['metadata']['name'];
   $display_id = $items['entity.view.edit_form']['metadata']['display_id'];
 
-  // Check if this view/display uses ai_sorting.
+  // Check if this view/display uses rl_sorting.
   $view_storage = \Drupal::entityTypeManager()->getStorage('view')->load($view_id);
   if (!$view_storage) {
     return;
   }
 
   $display = $view_storage->getDisplay($display_id);
-  if (!isset($display['display_options']['sorts']['ai_sorting']) &&
-      !isset($view_storage->get('display')['default']['display_options']['sorts']['ai_sorting'])) {
+  if (!isset($display['display_options']['sorts']['rl_sorting']) &&
+      !isset($view_storage->get('display')['default']['display_options']['sorts']['rl_sorting'])) {
     return;
   }
 
-  // Build experiment ID matching the format in ai_sorting_views_pre_render().
-  $experiment_id = 'ai_sorting-' . $view_id . '-' . $display_id;
+  // Build experiment ID matching the format in rl_sorting_views_pre_render().
+  $experiment_id = 'rl_sorting-' . $view_id . '-' . $display_id;
   $experiment_id = preg_replace('/[^a-zA-Z0-9_-]/', '_', $experiment_id);
 
   // Add the "View experiment" link directly.
-  $element['#links']['ai_sorting_view_experiment'] = [
+  $element['#links']['rl_sorting_view_experiment'] = [
     'title' => t('View experiment'),
     'url' => Url::fromRoute('rl.reports.experiment_detail', [
       'experiment_id' => $experiment_id,
@@ -166,8 +166,8 @@ function ai_sorting_contextual_links_view_alter(&$element, $items) {
 /**
  * Implements hook_views_data_alter().
  */
-function ai_sorting_views_data_alter(array &$data) {
-  // Add AI Sorting to all entity base tables.
+function rl_sorting_views_data_alter(array &$data) {
+  // Add RL Sorting to all entity base tables.
   $entity_type_manager = \Drupal::entityTypeManager();
   $entity_types = $entity_type_manager->getDefinitions();
 
@@ -180,13 +180,13 @@ function ai_sorting_views_data_alter(array &$data) {
     $table_name = $data_table ?: $base_table;
 
     if ($table_name && isset($data[$table_name])) {
-      $data[$table_name]['ai_sorting'] = [
-        'title' => t('AI Sorting'),
+      $data[$table_name]['rl_sorting'] = [
+        'title' => t('RL Sorting'),
         'help' => t('Sort @entity_type using reinforcement learning algorithm.', [
           '@entity_type' => $entity_type->getLabel(),
         ]),
         'sort' => [
-          'id' => 'ai_sorting',
+          'id' => 'rl_sorting',
         ],
       ];
     }
