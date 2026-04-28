@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 
 /**
- * AI-based sorting plugin for Views using Reinforcement Learning.
+ * Reinforcement-learning sorting plugin for Views.
  *
  * @ViewsSort("rl_sorting")
  */
@@ -160,7 +160,7 @@ class RLSorting extends SortPluginBase {
         }
       }
 
-      // If no content to sort, skip AI scoring entirely.
+      // If no content to sort, skip RL scoring entirely.
       if (empty($arm_ids)) {
         return;
       }
@@ -325,7 +325,7 @@ class RLSorting extends SortPluginBase {
         ]);
 
         // @phpstan-ignore globalDrupalDependencyInjection.useDependencyInjection
-        \Drupal::messenger()->addStatus($this->t('Views cache has been automatically set to @seconds seconds to match your AI sorting refresh rate.', ['@seconds' => $cache_max_age]));
+        \Drupal::messenger()->addStatus($this->t('Views cache has been automatically set to @seconds seconds to match your RL sorting refresh rate.', ['@seconds' => $cache_max_age]));
       }
     }
     else {
@@ -333,7 +333,7 @@ class RLSorting extends SortPluginBase {
         $this->view->display_handler->setOption('cache', ['type' => 'none']);
 
         // @phpstan-ignore globalDrupalDependencyInjection.useDependencyInjection
-        \Drupal::messenger()->addWarning($this->t('Views cache has been automatically disabled because AI sorting cache is set to "Never cache".'));
+        \Drupal::messenger()->addWarning($this->t('Views cache has been automatically disabled because RL sorting cache is set to "Never cache".'));
       }
     }
 
