@@ -1,0 +1,105 @@
+<?php
+
+/**
+ * @file
+ * Install hooks for the RL Sorting module.
+ */
+
+use Drupal\Core\Database\Database;
+
+/**
+ * Implements hook_install().
+ *
+ * If the legacy ai_sorting module is present (installed or data left over),
+ * migrate its data and view configuration into the rl_sorting namespace and
+ * uninstall ai_sorting. Safe no-op when ai_sorting was never installed.
+ */
+function rl_sorting_install() {
+  $database = Database::getConnection();
+  $schema = $database->schema();
+  $logger = \Drupal::logger('rl_sorting');
+
+  $has_old_data = FALSE;
+
+  if ($schema->tableExists('rl_experiment_registry')) {
+    $has_old_data = (bool) $database->select('rl_experiment_registry', 'r')
+      ->condition($database->condition('OR')
+        ->condition('module', 'ai_sorting')
+        ->condition('experiment_id', 'ai_sorting-%', 'LIKE'))
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+  }
+
+  $ai_sorting_enabled = \Drupal::moduleHandler()->moduleExists('ai_sorting');
+
+  if (!$has_old_data && !$ai_sorting_enabled) {
+    return;
+  }
+
+  $rl_tables_renamed = [];
+  foreach (['rl_experiment_registry', 'rl_experiment_totals', 'rl_arm_data', 'rl_arm_snapshots'] as $table) {
+    if (!$schema->tableExists($table)) {
+      continue;
+    }
+    $count = $database->update($table)
+      ->expression('experiment_id', "REPLACE(experiment_id, 'ai_sorting-', 'rl_sorting-')")
+      ->condition('experiment_id', 'ai_sorting-%', 'LIKE')
+      ->execute();
+    if ($count) {
+      $rl_tables_renamed[$table] = $count;
+    }
+  }
+
+  if ($schema->tableExists('rl_experiment_registry')) {
+    $module_count = $database->update('rl_experiment_registry')
+      ->fields(['module' => 'rl_sorting'])
+      ->condition('module', 'ai_sorting')
+      ->execute();
+    if ($module_count) {
+      $rl_tables_renamed['rl_experiment_registry (module column)'] = $module_count;
+    }
+  }
+
+  // Update views via the entity API so dependency arrays are recalculated
+  // on save. Editing raw config keeps the stale ai_sorting entry in
+  // dependencies.module, which causes Drupal to delete the view when
+  // ai_sorting is uninstalled below.
+  $views_renamed = [];
+  $view_storage = \Drupal::entityTypeManager()->getStorage('view');
+  foreach ($view_storage->loadMultiple() as $view_id => $view) {
+    $displays = $view->get('display');
+    if (!is_array($displays)) {
+      continue;
+    }
+    $modified = FALSE;
+    foreach ($displays as $display_id => &$display) {
+      if (!isset($display['display_options']['sorts']['ai_sorting'])) {
+        continue;
+      }
+      $sort = $display['display_options']['sorts']['ai_sorting'];
+      $sort['id'] = 'rl_sorting';
+      $sort['field'] = 'rl_sorting';
+      $sort['plugin_id'] = 'rl_sorting';
+      $display['display_options']['sorts']['rl_sorting'] = $sort;
+      unset($display['display_options']['sorts']['ai_sorting']);
+      $modified = TRUE;
+    }
+    unset($display);
+    if ($modified) {
+      $view->set('display', $displays);
+      $view->save();
+      $views_renamed[] = 'views.view.' . $view_id;
+    }
+  }
+
+  if ($ai_sorting_enabled) {
+    \Drupal::service('module_installer')->uninstall(['ai_sorting']);
+  }
+
+  $logger->notice('rl_sorting migration: renamed %tables; updated views: %views; ai_sorting uninstalled: %uninstalled.', [
+    '%tables' => $rl_tables_renamed ? json_encode($rl_tables_renamed) : 'none',
+    '%views' => $views_renamed ? implode(', ', $views_renamed) : 'none',
+    '%uninstalled' => $ai_sorting_enabled ? 'yes' : 'no',
+  ]);
+}
