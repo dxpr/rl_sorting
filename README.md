@@ -1,4 +1,12 @@
-# RL Sorting - Self-Learning A/B Testing for Content
+> **RL Sorting** is a Drupal module by [DXPR](https://dxpr.com) that applies
+> Thompson Sampling reinforcement learning to Views sort orders, automatically
+> surfacing high-performing content variants without manual A/B test configuration.
+>
+> [Getting Started](https://dxpr.com/c/getting-started) |
+> [Pricing](https://dxpr.com/pricing) |
+> [Try Free Demo](https://dxpr.com/try)
+
+# RL Sorting - Reinforcement Learning Content Optimization for Drupal Views
 
 Advanced A/B testing for Drupal Views that learns automatically. Instead of
 manually setting up A/B tests, RL Sorting continuously tests all content
@@ -70,5 +78,12 @@ Unlike traditional A/B testing tools, RL Sorting provides:
 
 ## Related Modules
 
-- [RL module](https://www.drupal.org/project/rl) - Core Thompson Sampling
-  algorithm and API for developers
+- [Reinforcement Learning (RL)](https://www.drupal.org/project/rl) - Required.
+  Thompson Sampling engine that powers all scoring, experiment tracking, and
+  reporting used by RL Sorting
+- [Views](https://www.drupal.org/docs/core-modules-and-themes/core-modules/views) - Required.
+  RL Sorting registers itself as a Views sort plugin and hooks into the Views
+  rendering pipeline
+- [DXPR CMS](https://www.drupal.org/project/dxpr_cms) - Ships RL Sorting
+  pre-configured alongside DXPR Builder and DXPR Theme for a turnkey content
+  optimization setup
