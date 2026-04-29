@@ -78,8 +78,12 @@ Unlike traditional A/B testing tools, RL Sorting provides:
 
 ## Related Modules
 
-- [Reinforcement Learning (RL)](https://www.drupal.org/project/rl) - Thompson Sampling A/B testing framework for Drupal
-- [Analyze](https://www.drupal.org/project/analyze) - unified content analysis framework
-- [DXPR Builder](https://www.drupal.org/project/dxpr_builder) - AI-powered drag-and-drop page building
-- [Google Tag](https://www.drupal.org/project/google_tag) - analytics tag management
-- [ECA](https://www.drupal.org/project/eca) - event-condition-action automation
+- [Reinforcement Learning (RL)](https://www.drupal.org/project/rl) - Required.
+  Thompson Sampling engine that powers all scoring, experiment tracking, and
+  reporting used by RL Sorting
+- [Views](https://www.drupal.org/docs/core-modules-and-themes/core-modules/views) - Required.
+  RL Sorting registers itself as a Views sort plugin and hooks into the Views
+  rendering pipeline
+- [DXPR CMS](https://www.drupal.org/project/dxpr_cms) - Ships RL Sorting
+  pre-configured alongside DXPR Builder and DXPR Theme for a turnkey content
+  optimization setup
