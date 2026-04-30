@@ -2,9 +2,9 @@
 > Thompson Sampling reinforcement learning to Views sort orders, automatically
 > surfacing high-performing content variants without manual A/B test configuration.
 >
-> [Getting Started](https://dxpr.com/c/getting-started) |
+> [Getting Started](https://dxpr.com/c/marketing-cms) |
 > [Pricing](https://dxpr.com/pricing) |
-> [Try Free Demo](https://dxpr.com/try)
+> [Try Free Demo](https://try.dxpr.com)
 
 # RL Sorting - Reinforcement Learning Content Optimization for Drupal Views
 
