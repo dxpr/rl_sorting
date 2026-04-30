@@ -1,6 +1,6 @@
-name: 'RL Sorting'
+name: 'RL: A/B Test Views Content'
 type: module
-description: 'Provides a reinforcement-learning-based sorting plugin for Drupal Views.'
+description: 'A/B test the order of any Drupal View using Thompson Sampling. Multivariate-friendly content optimization.'
 core_version_requirement: ^10.3 | ^11
 package: Custom
 dependencies:

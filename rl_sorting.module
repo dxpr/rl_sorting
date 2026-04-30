@@ -19,8 +19,9 @@ function rl_sorting_help($route_name, RouteMatchInterface $route_match) {
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t(
-        'The RL Sorting module provides an intelligent sorting mechanism
-          for Drupal Views using reinforcement learning algorithms.'
+        'A/B and multivariate test the order of any Drupal View using
+          Thompson Sampling. Pick a sort plugin in any View display and
+          the module promotes higher-performing content over time.'
       ) . '</p>';
       return $output;
   }
@@ -181,8 +182,8 @@ function rl_sorting_views_data_alter(array &$data) {
 
     if ($table_name && isset($data[$table_name])) {
       $data[$table_name]['rl_sorting'] = [
-        'title' => t('RL Sorting'),
-        'help' => t('Sort @entity_type using reinforcement learning algorithm.', [
+        'title' => t('RL: A/B Testing'),
+        'help' => t('A/B test the order of @entity_type using reinforcement learning (Thompson Sampling).', [
           '@entity_type' => $entity_type->getLabel(),
         ]),
         'sort' => [
