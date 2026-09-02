@@ -10,6 +10,8 @@
   <li>You need to balance promoting winners with discovering new high-performers</li>
 </ul>
 
+<a href="/files/project-images/rl-3d-posterior-landscape.jpg"><img src="/files/project-images/rl-3d-posterior-landscape.jpg" alt="3D Posterior Landscape chart showing RL Sorting experiment results with variant performance distributions converging as the algorithm learns which content performs best" /></a>
+
 <h3 id="module-project--features">Features</h3>
 <ul>
   <li>Thompson Sampling algorithm for intelligent A/B testing:
@@ -36,11 +38,26 @@
   <li>Save - content optimization begins immediately</li>
 </ol>
 
+<h3 id="module-project--how-it-works">From setup to results</h3>
+<ol>
+  <li><strong>Configure:</strong> add RL Sorting as the sort criterion on any Views display and save</li>
+  <li><strong>Collect:</strong> as visitors browse the page, the module silently tracks impressions (content shown) and conversions (content clicked)</li>
+  <li><strong>Learn:</strong> Thompson Sampling builds a reward distribution for each content item, balancing exploitation of known winners with exploration of newer content</li>
+  <li><strong>Optimise:</strong> the sort order gradually shifts toward higher-performing content, with top positions going to items visitors engage with most</li>
+  <li><strong>Analyse:</strong> the companion <a href="https://www.drupal.org/project/rl">RL module</a> provides experiment dashboards including the 3D Posterior Landscape chart, showing how each content variant's performance converges over time</li>
+</ol>
+
+<a href="/files/rl-sorting-modal.jpg"><img src="/files/rl-sorting-modal.jpg" alt="RL Sorting configuration modal in Drupal Views showing Thompson Sampling settings with favour recent content toggle, time window, and cache duration options" /></a>
+
 <div class="note-tip">
   <h4>Prefer a turnkey demo site?</h4>
   <p>Spin up <strong>DXPR CMS</strong> - Drupal pre-configured with DXPR Builder, DXPR Theme, RL Sorting module, and security best practices. DXPR CMS is a <a href="https://dxpr.com/c/marketing-cms?ref=50701">marketing CMS</a> built for teams that need content optimization out of the box.</p>
   <p><a href="https://www.drupal.org/project/dxpr_cms" title="DXPR CMS platform">Get DXPR CMS »</a></p>
 </div>
+
+<p>On the frontend, visitors see content ordered by the algorithm's learned preferences; high-performing items rise to the top while new content still receives fair exposure:</p>
+
+<p><a href="/files/rl-sorting-frontend.jpg"><img src="/files/rl-sorting-frontend.jpg" alt="Frontend page showing content sorted by RL Sorting with Thompson Sampling, displaying articles ordered by learned visitor engagement preferences" /></a></p>
 
 <h3 id="module-project--security-privacy">Security & Privacy</h3>
 <ul>
@@ -57,6 +74,30 @@
     <li>Drupal 10.3+ or 11</li>
   </ul>
 </p>
+
+<h2>FAQ</h2>
+
+<dl>
+  <dt>How does RL Sorting decide the content order?</dt>
+  <dd>
+    <p>RL Sorting uses Thompson Sampling, a multi-armed bandit algorithm, to rank content. Each piece of content has a reward distribution based on click-through data. On each page view, the algorithm samples from these distributions and ranks items by score, continuously shifting top positions toward content that visitors engage with most.</p>
+  </dd>
+
+  <dt>Does RL Sorting work with any Drupal View?</dt>
+  <dd>
+    <p>Yes. Add "RL Sorting" as a sort criterion to any Views display. The module registers itself as a standard Views sort plugin, so it works with any Views-compatible data source: nodes, taxonomy terms, users, media, or custom entities. Remove other sort criteria and let RL Sorting handle the ordering.</p>
+  </dd>
+
+  <dt>Does RL Sorting require manual A/B test configuration?</dt>
+  <dd>
+    <p>No. Unlike traditional A/B testing tools that require defining test variants and run durations, RL Sorting tests all content items simultaneously with zero manual setup. Add the sort plugin to a View, save, and optimisation begins on the next page view. New content gets fair initial exposure through Thompson Sampling's built-in exploration.</p>
+  </dd>
+
+  <dt>Does RL Sorting set cookies or track individual users?</dt>
+  <dd>
+    <p>No. RL Sorting tracks only anonymous interaction statistics: impressions (content shown) and conversions (content clicked). It does not set cookies, store user IDs, or create visitor profiles. All data stays in your Drupal database, making it GDPR-friendly by design.</p>
+  </dd>
+</dl>
 
 <h3>Related Modules</h3>
 <ul>
