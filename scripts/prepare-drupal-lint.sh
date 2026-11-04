@@ -18,7 +18,8 @@ echo "TARGET_DRUPAL_CORE_VERSION: $TARGET_DRUPAL_CORE_VERSION"
 composer config --global allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
 
 composer global require drupal/coder --dev
-composer global require phpcompatibility/php-compatibility --dev
+# 10.x is the first PHPCompatibility release that accepts PHP_CodeSniffer 4 (used by drupal/coder 9)
+composer global require phpcompatibility/php-compatibility:10.0.0-alpha2 --dev
 
 export PATH="$PATH:$COMPOSER_HOME/vendor/bin"
 
