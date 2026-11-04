@@ -1,6 +1,7 @@
 > **RL Sorting** is a Drupal module by [DXPR](https://dxpr.com) that applies
-> Thompson Sampling reinforcement learning to Views sort orders, automatically
-> surfacing high-performing content variants without manual A/B test configuration.
+> Thompson Sampling reinforcement learning to Views sort orders,
+> automatically surfacing high-performing content variants without manual A/B
+> test configuration.
 >
 > [Getting Started](https://dxpr.com/c/marketing-cms) |
 > [Pricing](https://dxpr.com/pricing) |
