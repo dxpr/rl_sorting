@@ -1,0 +1,204 @@
+<?php
+
+namespace Drupal\rl_sorting\Hook;
+
+use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\Core\Url;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\views\ViewExecutable;
+
+/**
+ * Hook implementations for rl_sorting.
+ */
+final class RlSortingHooks {
+
+  /**
+   * Implements hook_help().
+   */
+  #[Hook('help')]
+  public function help($route_name, RouteMatchInterface $route_match) {
+    switch ($route_name) {
+      case 'help.page.rl_sorting':
+        $output = '';
+        $output .= '<h3>' . t('About') . '</h3>';
+        $output .= '<p>' . t(
+          'A/B and multivariate test the order of any Drupal View using
+            Thompson Sampling. Pick a sort plugin in any View display and
+            the module promotes higher-performing content over time.'
+        ) . '</p>';
+        return $output;
+    }
+  }
+
+  /**
+   * Implements hook_views_pre_render().
+   */
+  #[Hook('views_pre_render')]
+  public function viewsPreRender(ViewExecutable $view) {
+    // Check if the view uses the 'rl_sorting' sort plugin.
+    $sorts = $view->display_handler->getOption('sorts');
+    if (!isset($sorts['rl_sorting'])) {
+      return;
+    }
+
+    // Get the base field for this view's data source.
+    $base_field = $view->storage->get('base_field');
+    if (empty($base_field)) {
+      // Can't track without a unique identifier.
+      return;
+    }
+
+    // Collect entity IDs and URLs for JavaScript tracking.
+    $entity_ids = [];
+    $entity_url_map = [];
+
+    foreach ($view->result as $row) {
+      $entity_id = NULL;
+      $entity = NULL;
+
+      // Try to get the entity ID from the base field.
+      if (isset($row->$base_field)) {
+        $entity_id = $row->$base_field;
+      }
+
+      // Try to get the entity object.
+      // @phpstan-ignore isset.property
+      if (isset($row->_entity) && $row->_entity instanceof EntityInterface) {
+        $entity = $row->_entity;
+        if (!$entity_id) {
+          $entity_id = $entity->id();
+        }
+      }
+      elseif (isset($row->_object) && $row->_object instanceof EntityInterface) {
+        $entity = $row->_object;
+        if (!$entity_id) {
+          $entity_id = $entity->id();
+        }
+      }
+
+      if ($entity_id) {
+        $entity_ids[] = (string) $entity_id;
+
+        // Generate URL for the entity if we have the entity object.
+        $url = '';
+        if ($entity && $entity->hasLinkTemplate('canonical')) {
+          try {
+            $url = $entity->toUrl('canonical')->toString();
+          }
+          catch (\Exception $e) {
+            // If URL generation fails, leave empty.
+            $url = '';
+          }
+        }
+
+        $entity_url_map[(string) $entity_id] = $url;
+      }
+    }
+
+    if (!empty($entity_ids)) {
+      // Generate deterministic experiment ID from view and display.
+      $experiment_id = 'rl_sorting-' . $view->id() . '-' . $view->current_display;
+      // Sanitize to ensure database-safe characters.
+      $experiment_id = preg_replace('/[^a-zA-Z0-9_-]/', '_', $experiment_id);
+
+      // Create human-readable experiment name.
+      $experiment_name = $view->id() . ':' . $view->current_display;
+
+      // Register this experiment with the RL module.
+      $registration_service = \Drupal::service(
+        'rl_sorting.experiment_registration'
+      );
+      $registration_service->registerExperiment($experiment_id, $experiment_name);
+
+      // Get RL module path for optimized endpoint.
+      $rl_path = \Drupal::service('extension.list.module')->getPath('rl');
+      $base_path = \Drupal::request()->getBasePath();
+
+      // Attach JavaScript library and settings.
+      $view->element['#attached']['library'][] = 'rl_sorting/rl_sorting_tracking';
+      $view->element['#attached']['drupalSettings']['rlSorting']['views'][$view->id() . '.' . $view->current_display] = [
+        'experimentId' => $experiment_id,
+        'entityIds' => $entity_ids,
+        'entityUrlMap' => $entity_url_map,
+        'rlEndpointUrl' => "{$base_path}/{$rl_path}/rl.php",
+        'displayId' => $view->current_display,
+      ];
+
+      // Add RL experiment highlight class for visual branding.
+      $view->element['#attributes']['class'][] = 'rl-experiment';
+    }
+  }
+
+  /**
+   * Implements hook_contextual_links_view_alter().
+   */
+  #[Hook('contextual_links_view_alter')]
+  public function contextualLinksViewAlter(&$element, $items) {
+    // Only proceed if this is a view contextual link group.
+    if (!isset($items['entity.view.edit_form']['metadata']['name']) ||
+        !isset($items['entity.view.edit_form']['metadata']['display_id'])) {
+      return;
+    }
+
+    $view_id = $items['entity.view.edit_form']['metadata']['name'];
+    $display_id = $items['entity.view.edit_form']['metadata']['display_id'];
+
+    // Check if this view/display uses rl_sorting.
+    $view_storage = \Drupal::entityTypeManager()->getStorage('view')->load($view_id);
+    if (!$view_storage) {
+      return;
+    }
+
+    $display = $view_storage->getDisplay($display_id);
+    if (!isset($display['display_options']['sorts']['rl_sorting']) &&
+        !isset($view_storage->get('display')['default']['display_options']['sorts']['rl_sorting'])) {
+      return;
+    }
+
+    // Build experiment ID matching the format in rl_sorting_views_pre_render().
+    $experiment_id = 'rl_sorting-' . $view_id . '-' . $display_id;
+    $experiment_id = preg_replace('/[^a-zA-Z0-9_-]/', '_', $experiment_id);
+
+    // Add the "View experiment" link directly.
+    $element['#links']['rl_sorting_view_experiment'] = [
+      'title' => t('View experiment'),
+      'url' => Url::fromRoute('rl.reports.experiment_detail', [
+        'experiment_id' => $experiment_id,
+      ]),
+      'weight' => 10,
+    ];
+  }
+
+  /**
+   * Implements hook_views_data_alter().
+   */
+  #[Hook('views_data_alter')]
+  public function viewsDataAlter(array &$data) {
+    // Add RL Sorting to all entity base tables.
+    $entity_type_manager = \Drupal::entityTypeManager();
+    $entity_types = $entity_type_manager->getDefinitions();
+
+    foreach ($entity_types as $entity_type) {
+      // Only add to entity types that have a data table (appear in Views).
+      $data_table = $entity_type->getDataTable();
+      $base_table = $entity_type->getBaseTable();
+
+      // Use data table if available, otherwise base table.
+      $table_name = $data_table ?: $base_table;
+
+      if ($table_name && isset($data[$table_name])) {
+        $data[$table_name]['rl_sorting'] = [
+          'title' => t('RL: A/B Testing'),
+          'help' => t('A/B test the order of @entity_type using reinforcement learning (Thompson Sampling).', [
+            '@entity_type' => $entity_type->getLabel(),
+          ]),
+          'sort' => [
+            'id' => 'rl_sorting',
+          ],
+        ];
+      }
+    }
+  }
+
+}
