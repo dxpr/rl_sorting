@@ -7,8 +7,6 @@
 
 use Drupal\Core\Hook\Attribute\LegacyHook;
 use Drupal\rl_sorting\Hook\RlSortingHooks;
-use Drupal\Core\Url;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\views\ViewExecutable;
 
