@@ -17,8 +17,8 @@ echo "TARGET_DRUPAL_CORE_VERSION: $TARGET_DRUPAL_CORE_VERSION"
 # Add this line to avoid the plugin prompt
 composer config --global allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
 
-composer global require drupal/coder --dev
-composer global require phpcompatibility/php-compatibility --dev
+# Resolve the coding standards together so they use a compatible PHPCS version.
+composer global require --dev drupal/coder 'phpcompatibility/php-compatibility:^9.3' 'squizlabs/php_codesniffer:^3.13' --with-all-dependencies
 
 export PATH="$PATH:$COMPOSER_HOME/vendor/bin"
 
@@ -28,6 +28,6 @@ composer global show -P
 phpcs -i
 
 phpcs --config-set colors 1
-phpcs --config-set drupal_core_version 11$TARGET_DRUPAL_CORE_VERSION
+phpcs --config-set drupal_core_version "$TARGET_DRUPAL_CORE_VERSION"
 
 phpcs --config-show 

@@ -2,6 +2,10 @@
 
 namespace Drupal\rl_sorting\Hook;
 
+use Drupal\Core\Extension\ModuleExtensionList;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Url;
 use Drupal\Core\Entity\EntityInterface;
@@ -12,6 +16,15 @@ use Drupal\views\ViewExecutable;
  * Hook implementations for rl_sorting.
  */
 final class RlSortingHooks {
+
+  /**
+   * Constructs the hook service.
+   */
+  public function __construct(
+    protected ModuleExtensionList $moduleList,
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected RequestStack $requestStack,
+  ) {}
 
   /**
    * Implements hook_help().
@@ -112,8 +125,8 @@ final class RlSortingHooks {
       $registration_service->registerExperiment($experiment_id, $experiment_name);
 
       // Get RL module path for optimized endpoint.
-      $rl_path = \Drupal::service('extension.list.module')->getPath('rl');
-      $base_path = \Drupal::request()->getBasePath();
+      $rl_path = $this->moduleList->getPath('rl');
+      $base_path = $this->requestStack->getCurrentRequest()->getBasePath();
 
       // Attach JavaScript library and settings.
       $view->element['#attached']['library'][] = 'rl_sorting/rl_sorting_tracking';
@@ -145,7 +158,7 @@ final class RlSortingHooks {
     $display_id = $items['entity.view.edit_form']['metadata']['display_id'];
 
     // Check if this view/display uses rl_sorting.
-    $view_storage = \Drupal::entityTypeManager()->getStorage('view')->load($view_id);
+    $view_storage = $this->entityTypeManager->getStorage('view')->load($view_id);
     if (!$view_storage) {
       return;
     }
@@ -176,7 +189,7 @@ final class RlSortingHooks {
   #[Hook('views_data_alter')]
   public function viewsDataAlter(array &$data) {
     // Add RL Sorting to all entity base tables.
-    $entity_type_manager = \Drupal::entityTypeManager();
+    $entity_type_manager = $this->entityTypeManager;
     $entity_types = $entity_type_manager->getDefinitions();
 
     foreach ($entity_types as $entity_type) {

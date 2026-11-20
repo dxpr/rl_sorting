@@ -12,3 +12,7 @@ services:
   Drupal\rl_sorting\Hook\RlSortingHooks:
     class: Drupal\rl_sorting\Hook\RlSortingHooks
     autowire: true
+    arguments:
+      - '@extension.list.module'
+      - '@entity_type.manager'
+      - '@request_stack'
