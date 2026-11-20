@@ -10,12 +10,16 @@ use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Url;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\rl_sorting\Service\ExperimentRegistrationService;
 use Drupal\views\ViewExecutable;
 
 /**
  * Hook implementations for rl_sorting.
  */
 final class RlSortingHooks {
+
+  use StringTranslationTrait;
 
   /**
    * Constructs the hook service.
@@ -24,6 +28,7 @@ final class RlSortingHooks {
     protected ModuleExtensionList $moduleList,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected RequestStack $requestStack,
+    protected ExperimentRegistrationService $registrationService,
   ) {}
 
   /**
@@ -34,8 +39,8 @@ final class RlSortingHooks {
     switch ($route_name) {
       case 'help.page.rl_sorting':
         $output = '';
-        $output .= '<h3>' . t('About') . '</h3>';
-        $output .= '<p>' . t(
+        $output .= '<h3>' . $this->t('About') . '</h3>';
+        $output .= '<p>' . $this->t(
           'A/B and multivariate test the order of any Drupal View using
             Thompson Sampling. Pick a sort plugin in any View display and
             the module promotes higher-performing content over time.'
@@ -119,10 +124,7 @@ final class RlSortingHooks {
       $experiment_name = $view->id() . ':' . $view->current_display;
 
       // Register this experiment with the RL module.
-      $registration_service = \Drupal::service(
-        'rl_sorting.experiment_registration'
-      );
-      $registration_service->registerExperiment($experiment_id, $experiment_name);
+      $this->registrationService->registerExperiment($experiment_id, $experiment_name);
 
       // Get RL module path for optimized endpoint.
       $rl_path = $this->moduleList->getPath('rl');
@@ -175,7 +177,7 @@ final class RlSortingHooks {
 
     // Add the "View experiment" link directly.
     $element['#links']['rl_sorting_view_experiment'] = [
-      'title' => t('View experiment'),
+      'title' => $this->t('View experiment'),
       'url' => Url::fromRoute('rl.reports.experiment_detail', [
         'experiment_id' => $experiment_id,
       ]),
@@ -202,8 +204,8 @@ final class RlSortingHooks {
 
       if ($table_name && isset($data[$table_name])) {
         $data[$table_name]['rl_sorting'] = [
-          'title' => t('RL: A/B Testing'),
-          'help' => t('A/B test the order of @entity_type using reinforcement learning (Thompson Sampling).', [
+          'title' => $this->t('RL: A/B Testing'),
+          'help' => $this->t('A/B test the order of @entity_type using reinforcement learning (Thompson Sampling).', [
             '@entity_type' => $entity_type->getLabel(),
           ]),
           'sort' => [

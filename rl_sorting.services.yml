@@ -16,3 +16,4 @@ services:
       - '@extension.list.module'
       - '@entity_type.manager'
       - '@request_stack'
+      - '@rl_sorting.experiment_registration'

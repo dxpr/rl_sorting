@@ -73,7 +73,7 @@ function rl_sorting_install() {
       continue;
     }
     $modified = FALSE;
-    foreach ($displays as $display_id => &$display) {
+    foreach ($displays as &$display) {
       if (!isset($display['display_options']['sorts']['ai_sorting'])) {
         continue;
       }
